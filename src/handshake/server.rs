@@ -99,6 +99,13 @@ impl<'a, T: AsyncRead + AsyncWrite + Unpin> Server<'a, T> {
         }
     }
 
+    /// Await an incoming client handshake request, or take the buffer.
+    pub async fn receive_request_or_take_buffer(&mut self) -> Result<ClientRequest<'a>, (Error, BytesMut)> {
+        self.receive_request()
+            .await
+            .map_err(|err| (err, self.take_buffer()))
+    }
+
     /// Respond to the client.
     pub async fn send_response(&mut self, r: &Response<'_>) -> Result<(), Error> {
         self.buffer.clear();
